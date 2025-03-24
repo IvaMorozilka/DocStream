@@ -1,0 +1,10 @@
+aiogram
+openpyxl
+pandas
+python-decouple
+icecream
+apscheduler
+aiohttp-socks
+asyncpg-lite
+requests
+prettytable
