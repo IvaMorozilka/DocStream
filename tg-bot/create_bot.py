@@ -11,17 +11,18 @@ from asyncpg_lite import DatabaseManager
 ADMINS = [int(admin_id) for admin_id in os.environ.get("ADMINS").split(",")]
 DATABASE_URL = os.environ.get("DATABASE_URL")
 DEV_MODE = int(os.environ.get("DEV_MODE"))
+USE_PROXY = int(os.environ.get("USE_PROXY"))
 PROXY_URL = os.environ.get("PROXY_URL")
 DEL_PASWD = os.environ.get("DEL_PASWD")
 DEV_TOKEN = os.environ.get("DEV_TOKEN")
 PROD_TOKEN = os.environ.get("PROD_TOKEN")
+TOKEN = PROD_TOKEN
 
 if DEV_MODE:
-    session = None
     TOKEN = DEV_TOKEN
-else:
+
+if USE_PROXY:
     session = AiohttpSession(proxy=PROXY_URL)
-    TOKEN = PROD_TOKEN
 
 
 scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
