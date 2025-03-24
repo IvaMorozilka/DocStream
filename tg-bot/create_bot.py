@@ -16,7 +16,9 @@ PROXY_URL = os.environ.get("PROXY_URL")
 DEL_PASWD = os.environ.get("DEL_PASWD")
 DEV_TOKEN = os.environ.get("DEV_TOKEN")
 PROD_TOKEN = os.environ.get("PROD_TOKEN")
+# PROD
 TOKEN = PROD_TOKEN
+session = None
 
 if DEV_MODE:
     TOKEN = DEV_TOKEN
