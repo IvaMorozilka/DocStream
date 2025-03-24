@@ -16,20 +16,6 @@ app = FastAPI()
 logger = logging.getLogger("uvicorn.error")
 
 
-class DasboardName(str, Enum):
-    gummanitarnaya_pomoshch_svo = "ГуманитарнаяПомощьСВО"
-    aip = "АИП"
-    oep = "ОЭП"
-    kok = "КОК"
-    fns = "ФНС"
-    kcr = "КЦР"
-    oiv = "ОИВ"
-    soczashchita = "Соцзащита"
-    novyj_fns = "НовыйФНС"
-    importozameshchenie = "Импортозамещение"
-    wout_category = ""
-
-
 @app.get("/")
 async def root():
     return {"api": "sucess"}

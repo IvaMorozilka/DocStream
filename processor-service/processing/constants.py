@@ -1,11 +1,12 @@
-from decouple import config
+import os
+from enum import Enum
 
 # Для настройки клиента s3
-S3_ENDPOINT_URL = config("S3_ENDPOINT_URL")
-AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
-RAW_BUCKET_NAME = config("RAW_BUCKET_NAME")
-PROCESSED_BUCKET_NAME = config("PROCESSED_BUCKET_NAME")
+S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+RAW_BUCKET_NAME = os.environ.get("RAW_BUCKET_NAME")
+PROCESSED_BUCKET_NAME = os.environ.get("PROCESSED_BUCKET_NAME")
 
 
 # Названия дашбордов на английском
@@ -38,3 +39,17 @@ EN_HASVO_COLS = {
     "Сколько запросили в еденицах": "quantity_requested",
     "Сколько передали в еденицах": "quantity_transferred",
 }
+
+
+class DasboardName(str, Enum):
+    gummanitarnaya_pomoshch_svo = "ГуманитарнаяПомощьСВО"
+    aip = "АИП"
+    oep = "ОЭП"
+    kok = "КОК"
+    fns = "ФНС"
+    kcr = "КЦР"
+    oiv = "ОИВ"
+    soczashchita = "Соцзащита"
+    novyj_fns = "НовыйФНС"
+    importozameshchenie = "Импортозамещение"
+    wout_category = ""
