@@ -1,15 +1,15 @@
 services:
-  worker:
+  processor:
     build:
-      context: ../processor/app
+      context: ./processor-service
       args:
         - HTTP_PROXY=http://proxy.plo.lan:3128
         - HTTPS_PROXY=http://proxy.plo.lan:3128
     ports:
       - "8000:8000"
     volumes:
-      - ../processor/app:/code/app
-      - ./dlt_data:/var/dlt
+      - ./processor-service:/code/app
+      - ./data/dlt_data:/var/dlt
     env_file:
       - worker.env
     networks:
@@ -20,13 +20,13 @@ services:
 
   bot:
     build:
-      context: ../wbot
+      context: ./tg-bot
       args:
         - HTTP_PROXY=http://proxy.plo.lan:3128
         - HTTPS_PROXY=http://proxy.plo.lan:3128
     restart: always
     volumes:
-      - ../wbot/app:/code/app
+      - ./tg-bot:/code/app
     env_file:
       - bot.env
     networks:
@@ -41,7 +41,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./processor_postgres_data:/var/lib/postgresql/data
+      - ./data/processor_postgres_data:/var/lib/postgresql/data
     networks:
       - main_network
     healthcheck:
@@ -57,7 +57,7 @@ services:
     env_file:
       - bot_db.env
     volumes:
-      - ./bot_db_data:/var/lib/postgresql/data
+      - ./data/bot_db_data:/var/lib/postgresql/data
     networks:
       - main_network
     healthcheck:
@@ -74,7 +74,7 @@ services:
       - "9000:9000" # API
       - "9001:9001" # Console
     volumes:
-      - ./minio_data:/data
+      - ./data/minio_data:/data
     env_file:
       - minio.env
     command: server /data --console-address ":9001"
