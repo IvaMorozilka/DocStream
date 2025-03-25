@@ -11,7 +11,7 @@ services:
       - ./processor-service:/code/app
       - ./data/dlt_data:/var/dlt
     env_file:
-      - worker.env
+      - processor.env
     networks:
       - main_network
     restart: always
