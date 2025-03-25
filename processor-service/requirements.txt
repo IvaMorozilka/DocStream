@@ -1,5 +1,5 @@
 fastapi[standard]
-dlt[s3, postgres, sqlalchemy]>=1.7.0
+dlt[s3, sqlalchemy]>=1.7.0
 boto3==1.36.23
 python-decouple
 pandas
