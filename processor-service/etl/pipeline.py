@@ -65,7 +65,7 @@ def update_table_metadata(dataset_name: str):
 
 @dlt.source
 def minio_source(dataset_name: str):
-    if dataset_name == "ГуманитарнаяПомощьСВО":
+    if dataset_name == "ГуманитарнаяПомощьСВО" or dataset_name == "АИП":
         parquet_reader = readers(
             file_glob=f"{dataset_name}/**/*.parquet",
         ).read_parquet()
