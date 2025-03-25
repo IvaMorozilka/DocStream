@@ -29,7 +29,7 @@ services:
       - bot_db
 
   processor_db:
-    image: mysql
+    image: mysql:8.0.41
     env_file:
       - processor_db.env
     ports:

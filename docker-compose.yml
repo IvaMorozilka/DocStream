@@ -35,7 +35,7 @@ services:
       - bot_db
 
   processor_db:
-    image: mysql
+    image: mysql:8.0.41
     env_file:
       - processor_db.env
     ports:
@@ -44,6 +44,7 @@ services:
       - ./data/processor_db_data:/var/lib/mysql
     networks:
       - main_network
+    command: --mysql-native-password=ON
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
