@@ -80,7 +80,7 @@ def run_dlt_pipeline(dataset_name: str):
     # Настройка и запуск dlt пайплайна
     pipeline = dlt.pipeline(
         pipeline_name="main",
-        destination="postgres",
+        destination="sqlalchemy",
         dataset_name=EN_TABLE_NAMES_NORMALIZED.get(dataset_name),
     )
 
