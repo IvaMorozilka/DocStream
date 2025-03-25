@@ -79,12 +79,12 @@ def minio_source(dataset_name: str):
 def run_dlt_pipeline(dataset_name: str):
     # Настройка и запуск dlt пайплайна
     pipeline = dlt.pipeline(
-        pipeline_name="main",
+        pipeline_name=EN_TABLE_NAMES_NORMALIZED.get(dataset_name),
         destination="sqlalchemy",
         dataset_name=EN_TABLE_NAMES_NORMALIZED.get(dataset_name),
     )
 
-    load_info = pipeline.run(minio_source(dataset_name))
+    load_info = pipeline.run(minio_source(dataset_name), refresh="drop_sources")
 
     # Обновляем метаданные
     if not os.environ.get("DREMIO_TOKEN"):
