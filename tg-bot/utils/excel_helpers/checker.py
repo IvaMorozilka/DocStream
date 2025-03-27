@@ -86,7 +86,21 @@ def check_data_types(
 
     for column, series in df.items():
         if series.dtype != data_types[column]:
-            bad_columns.append("<code>" + column + "</code>")
+            if data_types[column] == DATETIME and pd.api.types.is_datetime64_any_dtype(
+                series
+            ):
+                continue
+            elif data_types[column] == OBJECT and pd.api.types.is_object_dtype(series):
+                continue
+            elif data_types[column] == NUMERIC and pd.api.types.is_numeric_dtype(
+                series
+            ):
+                continue
+
+            logger.info(f"{column}, dt: {series.dtype} != {data_types[column]}")
+            counter += 1
+            bad_columns.append(f"<b>{counter}</b>. <code>{column}</code>")
+
     if bad_columns:
         return False, f"<b>❗️Неверный тип данных</b> ⬇️\n{'\n'.join(bad_columns)}"
     return True, ""
