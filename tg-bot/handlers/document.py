@@ -123,7 +123,7 @@ async def process_document(message: Message, state: FSMContext):  # noqa: F811
     result, errors = check_document_by_category(file_bytes=file_io, category=dshb_name)
     if not result:
         await message.answer(
-            f"{errors}\nℹ️ Пожалуйста, отправьте новый документ следующим сообщением",
+            f"{errors}\n\nℹ️ Пожалуйста, отправьте новый документ следующим сообщением",
             reply_markup=(
                 InlineKeyboardMarkup(
                     inline_keyboard=[

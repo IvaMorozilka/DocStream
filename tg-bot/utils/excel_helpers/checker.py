@@ -3,13 +3,18 @@ from openpyxl.utils import get_column_letter
 from icecream import ic
 import pandas as pd
 import io
-from create_bot import logger
 
+import logging
 from utils.excel_helpers.constants import (
     COLUMNS_DATA_TYPES,
     CORRECT_HEADER_DATA,
     COLUMNS_TO_CHECK_NULLS_IN,
+    OBJECT,
+    NUMERIC,
+    DATETIME,
 )
+
+logger = logging.getLogger(__name__)
 
 ic.configureOutput(prefix="LOGS| ")
 ic.disable()
@@ -39,7 +44,7 @@ def check_correct_header(
         ]
         return (
             False,
-            f"<b>Остуствуют столбцы</b> ⬇️\n{''.join(missing)}",
+            f"⬇️ <b>Остуствуют столбцы</b> \n{''.join(missing)}",
         )
 
     return True, ""
@@ -48,7 +53,7 @@ def check_correct_header(
 def check_merged_cells(file_bytes: io.BytesIO):
     wb = openpyxl.load_workbook(file_bytes)
     if wb.active.merged_cells:
-        return False, "<b>❗️Найдены объединенные ячейки</b>"
+        return False, "<b>🔴 Найдены объединенные ячейки</b>"
     return True, ""
 
 
@@ -59,6 +64,7 @@ def check_missing_cells(
     if not columns_to_check:
         columns_to_check = df.columns
     bad_columns = []
+    counter = 0
 
     for column in columns_to_check:
         if column in df.columns:
@@ -66,12 +72,13 @@ def check_missing_cells(
             if (
                 series.isna().any() or (series == "-").any()
             ) and column in columns_to_check:
-                bad_columns.append("<code>" + column + "</code>")
+                counter += 1
+                bad_columns.append(f"<b>{counter}</b>. <code>{column}</code>")
 
     if bad_columns:
         return (
             False,
-            f"<b>❗️Наличие пропущенных значений</b> ⬇️\n{'\n'.join(bad_columns)}",
+            f"⬇️ <b>Наличие пропущенных значений</b>\n{'\n'.join(bad_columns)}",
         )
     return True, ""
 
@@ -83,6 +90,7 @@ def check_data_types(
     if not data_types:
         return False, "Не указаны типы данных"
     bad_columns = []
+    counter = 0
 
     for column, series in df.items():
         if series.dtype != data_types[column]:
@@ -102,7 +110,7 @@ def check_data_types(
             bad_columns.append(f"<b>{counter}</b>. <code>{column}</code>")
 
     if bad_columns:
-        return False, f"<b>❗️Неверный тип данных</b> ⬇️\n{'\n'.join(bad_columns)}"
+        return False, f"⬇️ <b>Неверный тип данных</b>\n{'\n'.join(bad_columns)}"
     return True, ""
 
 
@@ -127,6 +135,9 @@ def check_document_by_category(
             errors.append(error_msg)
 
     if errors:
-        return False, f"<b>ℹ️Проверка документа не пройдена</b>\n{'\n'.join(errors)}"
+        return (
+            False,
+            f"<b>🚫 Проверка документа не пройдена</b>\n\n{'\n'.join(errors)}",
+        )
 
     return True, ""
