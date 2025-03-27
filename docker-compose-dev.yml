@@ -20,7 +20,7 @@ services:
       context: ./tg-bot
     restart: always
     volumes:
-      - ./tg-bot:/code/app
+      - ./tg-bot:/app
     env_file:
       - bot.env
     networks:
