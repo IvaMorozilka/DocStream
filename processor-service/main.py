@@ -52,10 +52,11 @@ async def set_config(
     config: dict,
     dashboard_name: DasboardName = Query(default=DasboardName.wout_category),
 ):
-    if dashboard_name.value in processing_cfg.keys():
-        processing_cfg[dashboard_name.value] = config
-        return {"status:": "ok"}
-    return {"status": "fail"}
+    processing_cfg[dashboard_name.value] = config
+    return {
+        "status:": "ok",
+        "desc": f"Config {{ {str(config)[:100]} }} set to {dashboard_name.value}",
+    }
 
 
 @app.post("/save_config")
