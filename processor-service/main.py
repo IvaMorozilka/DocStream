@@ -42,7 +42,7 @@ async def upload(
             ContentType=file.content_type,
         )
         minio_ui_path = f"/browser/{RAW_BUCKET_NAME}/{urllib.parse.quote(path)}"
-        return {"status": "success", "path": minio_ui_path}
+        return {"status": "success", "key": path, "ui_path": minio_ui_path}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
@@ -85,7 +85,7 @@ async def process_file(request: Request):
         (event_data.get("Records", [{}])[0].get("s3", {}).get("object", {}).get("key"))
     )
     file_name_ext = Path(object_key).name
-    processed_path = os.path.splitext(object_key)[0] + ".parquet"
+    processed_path = (os.path.splitext(object_key)[0] + ".parquet").replace("+", " ")
     dataset_name = Path(object_key).parts[0]
     # ---------------------------------
 
@@ -100,4 +100,29 @@ async def process_file(request: Request):
         )
     except Exception as e:
         logger.error(str(e))
-    return {"status": "sucess"}
+    return {
+        "status": "sucess",
+    }
+
+
+@app.post("/process_all_files")
+async def process_all_files(
+    dashboard_name: DasboardName = Query(default=DasboardName.wout_category),
+):
+    response = s3_client.list_objects(
+        Bucket=RAW_BUCKET_NAME, Prefix=dashboard_name.value
+    )
+    contents = response.get("Contents")
+    file_keys = [d.get("Key") for d in contents]
+    dataset_name = dashboard_name.value
+
+    for key in file_keys:
+        try:
+            df = get_file_as_df_from_s3(key)
+            processed_df = procces_df(df, dataset_name)
+            processed_path = os.path.splitext(key)[0] + ".parquet"
+            put_df_to_s3(processed_path, processed_df)
+        except Exception as e:
+            logger.info(f"Error when processing {key}: {e}")
+
+    return {"status": "ok", "processed_files": file_keys}

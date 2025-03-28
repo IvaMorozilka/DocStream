@@ -150,7 +150,7 @@ async def process_document(message: Message, state: FSMContext):  # noqa: F811
         return
 
     # Sending documnets with caption to admins ...
-    inline_url = MINIO_UI_PATH + response.get("path")
+    inline_url = MINIO_UI_PATH + response.get("ui_path")
     user_info = await get_user_info(message.from_user.id)
     caption_text = f"📄 Вам пришел новый документ!\n\n<b>Для дашборда:</b> {dshb_name}\n<b>Отправитель:</b> {user_info['full_name']}, @{message.from_user.username or 'не указан'}\n<b>Организация:</b> {user_info['org_name']}"
     total_users, users_ids_without_send = await send_document(
