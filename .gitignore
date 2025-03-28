@@ -9,5 +9,7 @@ secrets.toml
 # ignore duckdb
 *.duckdb
 *.wal
-#ignore data
+# ignore data
 data/*
+# ignore ipynb
+*.ipynb 
