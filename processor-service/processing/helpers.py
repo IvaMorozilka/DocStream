@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Literal
 from pathlib import Path
 import os
+import json
+import aiofiles
 
 
 def multi_replace(
@@ -179,3 +181,14 @@ def create_bucket_file_path(dasboard_name: str, original_file_name: str):
     if dasboard_name:
         return f"{dasboard_name}/{year}/{month}/{file_name}_day{day}_id{now.timestamp():.0f}{file_ext}"
     return f"trash/{original_file_name}"
+
+
+async def read_json(path: str) -> dict:
+    async with aiofiles.open(path, "r", encoding="utf-8") as f:
+        data = await f.read()
+    return json.loads(data)
+
+
+async def save_json(json_data: dict, path: str) -> None:
+    async with aiofiles.open(path, "w", encoding="utf-8") as f:
+        await f.write(json.dumps(json_data, indent=4, ensure_ascii=False))

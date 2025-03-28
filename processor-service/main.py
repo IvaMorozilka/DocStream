@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import urllib
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Query
 import logging
@@ -7,18 +8,73 @@ import os
 from s3.client import get_file_as_df_from_s3, put_df_to_s3, s3_client
 from etl.pipeline import run_dlt_pipeline
 from processing.processing_funcs import procces_df
-from processing.helpers import create_bucket_file_path
-
+from processing.helpers import create_bucket_file_path, read_json, save_json
 from processing.constants import RAW_BUCKET_NAME, PROCESSED_BUCKET_NAME, DasboardName
 
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+processing_cfg = {}
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    loaded_cfg = await read_json(CONFIG_PATH)
+    processing_cfg.update(loaded_cfg)
+    logger.info(
+        f"Config Loaded for {','.join(processing_cfg.keys()).removesuffix(',')}"
+    )
+    yield
+    logger.info("App Down")
+
+
+app = FastAPI(lifespan=lifespan)
 logger = logging.getLogger("uvicorn.error")
 
 
 @app.get("/")
 async def root():
-    return {"api": "sucess"}
+    return {"api": "ok"}
+
+
+@app.get("/get_config")
+async def get_config(
+    dashboard_name: DasboardName = Query(default=DasboardName.wout_category),
+):
+    return {
+        "config": processing_cfg.get(
+            dashboard_name.value, f"Config not set for {dashboard_name.value}"
+        )
+    }
+
+
+@app.post("/set_config")
+async def set_config(
+    config: dict,
+    dashboard_name: DasboardName = Query(default=DasboardName.wout_category),
+):
+    if dashboard_name.value in processing_cfg.keys():
+        processing_cfg[dashboard_name.value] = config
+        return {"status:": "ok"}
+    return {"status": "fail"}
+
+
+@app.post("/save_config")
+async def save_config():
+    try:
+        await save_json(processing_cfg, CONFIG_PATH)
+        return {"status": "ok", "save_path": CONFIG_PATH}
+    except Exception as e:
+        return {"status": "fail", "exception": str(e)}
+
+
+@app.post("/load_config")
+async def load_config():
+    try:
+        loaded_cfg = await read_json(CONFIG_PATH)
+        processing_cfg.update(loaded_cfg)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "fail", "exception": str(e)}
 
 
 @app.post("/upload_file/")
@@ -93,7 +149,9 @@ async def process_file(request: Request):
     try:
         df = get_file_as_df_from_s3(object_key)
         logger.info(f"Received file {file_name_ext} as df")
-        processed_df = procces_df(df, dataset_name)
+        processed_df = procces_df(
+            df, dataset_name, process_config=processing_cfg.get(dataset_name)
+        )
         put_df_to_s3(processed_path, processed_df)
         logger.info(
             f"Processed and Saved file to {Path(processed_path).parent} as {os.path.split(processed_path)[-1]}"
@@ -112,6 +170,7 @@ async def process_all_files(
     response = s3_client.list_objects(
         Bucket=RAW_BUCKET_NAME, Prefix=dashboard_name.value
     )
+    logger.info(processing_cfg)
     contents = response.get("Contents")
     file_keys = [d.get("Key") for d in contents]
     dataset_name = dashboard_name.value
@@ -119,10 +178,13 @@ async def process_all_files(
     for key in file_keys:
         try:
             df = get_file_as_df_from_s3(key)
-            processed_df = procces_df(df, dataset_name)
+            processed_df = procces_df(
+                df, dataset_name, process_config=processing_cfg[dataset_name]
+            )
             processed_path = os.path.splitext(key)[0] + ".parquet"
             put_df_to_s3(processed_path, processed_df)
         except Exception as e:
             logger.info(f"Error when processing {key}: {e}")
+            return {"status": "fail", "exception": e}
 
     return {"status": "ok", "processed_files": file_keys}
