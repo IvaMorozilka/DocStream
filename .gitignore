@@ -13,3 +13,5 @@ secrets.toml
 data/*
 # ignore ipynb
 *.ipynb 
+# config
+processor-service/config.json
